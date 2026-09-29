@@ -43,11 +43,18 @@ async function hasFactoryChainLedger(cwd) {
  *   2. omc-cli on PATH (npm global standalone installs — the bin IS the bridge)
  */
 function resolveBridgeInvocation() {
+  // Rehearsal override: real hook bridge entry (dist/hooks/bridge.js), not the
+  // commander CLI that omc-cli/bridge/cli.cjs resolve to.
+  const override = process.env.OMC_HOOK_BRIDGE;
+  if (override && existsSync(override)) {
+    return { command: process.execPath, args: [override, '--hook=session-end'] };
+  }
   const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
   if (pluginRoot) {
-    const bridgePath = join(pluginRoot, 'bridge', 'cli.cjs');
-    if (existsSync(bridgePath)) {
-      return { command: process.execPath, args: [bridgePath, '--hook=session-end'] };
+    for (const candidate of [join(pluginRoot, 'dist', 'hooks', 'bridge.js'), join(pluginRoot, 'bridge', 'cli.cjs')]) {
+      if (existsSync(candidate)) {
+        return { command: process.execPath, args: [candidate, '--hook=session-end'] };
+      }
     }
   }
   return { command: 'omc-cli', args: ['--hook=session-end'] };
@@ -72,8 +79,10 @@ try {
   spawnSync(bridge.command, bridge.args, {
     input: stdin,
     stdio: ['pipe', 'inherit', 'inherit'],
-    // omc-cli resolves through .cmd shims on Windows; cmd needs shell:true
-    shell: process.platform === 'win32',
+    // omc-cli resolves through .cmd shims on Windows; cmd needs shell:true.
+    // Direct node invocations must NOT use shell — execPath paths with
+    // spaces ("D:\Program Files\nodejs\node.exe") get split by cmd.
+    shell: bridge.command === 'omc-cli' && process.platform === 'win32',
     timeout: 10000,
     windowsHide: true,
   });
