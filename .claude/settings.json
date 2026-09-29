@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"D:/aiLocal/ticketing-demo/.claude/hooks/session-end.mjs\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh issue view:*)",
+      "Bash(gh issue comment:*)",
+      "Read(**)",
+      "Edit(**)"
+    ]
+  }
+}
