@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+// 进程层入口：stdout/stderr、退出码归口。业务逻辑在 src/cli.js。
+// 数据目录取当前工作目录下的 .ticketing/（数据跟着人走，不跟安装走）。
+
+import { run } from '../src/cli.js';
+import { UsageError } from '../src/format.js';
+import { join } from 'node:path';
+
+try {
+  const { code, out } = run(process.argv.slice(2), {
+    dataDir: join(process.cwd(), '.ticketing'),
+  });
+  if (out) console.log(out);
+  process.exit(code);
+} catch (err) {
+  // 用法/参数错误 exit 2；业务拒绝与未预期错误 exit 1
+  const code = err instanceof UsageError ? 2 : 1;
+  console.error(`错误：${err.message}`);
+  process.exit(code);
+}

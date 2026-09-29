@@ -1,0 +1,13 @@
+{
+  "name": "ticketing-demo",
+  "version": "0.1.0",
+  "description": "申诉处理线上化 CLI（ticketing-escalate-001 最小闭环）",
+  "type": "module",
+  "bin": {
+    "ticketing": "bin/ticketing"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "private": true
+}
